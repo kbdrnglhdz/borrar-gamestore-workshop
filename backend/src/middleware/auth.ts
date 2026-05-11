@@ -26,7 +26,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 export const generateToken = (userId: number, role: string) => {
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: '60m' });
 };
 
 export const generateRefreshToken = (userId: number) => {

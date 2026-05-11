@@ -19,14 +19,18 @@ Users SHALL authenticate with email and password to access the system.
 - **AND** no tokens are issued
 
 ### Requirement: Session Persistence
-Users SHALL maintain their session for 15 minutes after login.
+Users SHALL maintain their session for 60 minutes of inactivity after login.
 
 #### Scenario: Session timeout
-- **WHEN** 15 minutes pass without any request from an authenticated user
+- **WHEN** 60 minutes pass without any request from an authenticated user
 - **THEN** the session expires
 - **AND** the user must log in again
 
-**KNOWN BUG:** Session expires after 15 minutes regardless of user activity.
+#### Scenario: Activity resets timeout
+- **WHEN** an authenticated user makes a request before 60 minutes of inactivity have elapsed
+- **THEN** the inactivity timer resets to 60 minutes
+- **AND** the session remains valid
+
 **KNOWN BUG:** Refresh token never renews automatically.
 
 ### Requirement: Password Storage
