@@ -16,7 +16,13 @@ Users SHALL browse products in pages of 10 items.
 - **WHEN** a user requests page 2
 - **THEN** products 11-20 are returned
 
-**KNOWN BUG:** Page 2 returns the same products as page 1.
+#### Scenario: Rapid page changes
+- **WHEN** a user rapidly clicks through pages 1, 2, 3
+- **THEN** only the response for page 3 is rendered
+
+#### Scenario: Network error during page change
+- **WHEN** a page request fails due to a network error
+- **THEN** the page state reverts to the previously loaded page
 
 ### Requirement: Price Filter
 Users SHALL filter products by price range.
@@ -33,9 +39,6 @@ Users SHALL filter products by price range.
 - **WHEN** a user selects "Price: High to Low"
 - **THEN** products are ordered from highest to lowest price
 
-**KNOWN BUG:** Price filter orders products alphabetically instead of numerically.
-**Example:** [100, 20, 5] is returned as [100, 20, 5] (alphabetical: "100", "20", "5") instead of [5, 20, 100].
-
 ### Requirement: Product Images
 Users SHALL view product images correctly.
 
@@ -48,3 +51,15 @@ Users SHALL view product images correctly.
 - **THEN** a fallback placeholder image is shown
 
 **KNOWN BUG:** Product images use absolute local paths (e.g., `/images/product.jpg`) instead of relative or CDN URLs, causing broken images in production.
+
+### Requirement: Request cancellation
+The frontend SHALL cancel in-flight product list requests when the user changes pages.
+
+#### Scenario: Cancel stale request
+- **WHEN** a user changes page while a previous page request is still in flight
+- **THEN** the previous request is aborted via AbortController
+
+#### Scenario: Aborted request is silent
+- **WHEN** a request is aborted
+- **THEN** no error is displayed to the user
+- **THEN** no console error is logged for the abort

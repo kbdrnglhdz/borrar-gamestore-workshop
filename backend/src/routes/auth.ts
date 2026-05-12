@@ -9,6 +9,10 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already exists' });
@@ -34,13 +38,17 @@ router.post('/register', async (req, res) => {
 
     res.json({ token, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     // BUG: Comparing plain text passwords directly
     const user = await prisma.user.findFirst({
@@ -61,7 +69,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
@@ -93,7 +101,7 @@ router.post('/refresh', async (req, res) => {
 
     res.json({ token, refreshToken: newRefreshToken });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
@@ -106,7 +114,7 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
 
     res.json({ message: 'Logged out successfully' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
@@ -123,7 +131,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
 
     res.json(user);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 

@@ -88,20 +88,28 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
 export const api = {
   auth: {
     register: async (data: any) => {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return response.json();
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        return response.json();
+      } catch {
+        return { error: 'Network error. Please try again.' };
+      }
     },
     login: async (data: any) => {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return response.json();
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        return response.json();
+      } catch {
+        return { error: 'Network error. Please try again.' };
+      }
     },
     me: async () => fetchWithAuth('/auth/me').then(r => r.json()),
     logout: async () => {
