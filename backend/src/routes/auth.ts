@@ -1,9 +1,17 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { generateToken, generateRefreshToken, verifyRefreshToken, AuthRequest, authenticate } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: false,
+  sameSite: 'strict' as const,
+  path: '/api/auth',
+  maxAge: 7 * 24 * 60 * 60 * 1000
+};
 
 router.post('/register', async (req, res) => {
   try {
@@ -36,7 +44,8 @@ router.post('/register', async (req, res) => {
       data: { refreshToken }
     });
 
-    res.json({ token, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
     res.status(500).json({ error: 'Something went wrong' });
   }
@@ -67,15 +76,16 @@ router.post('/login', async (req, res) => {
       data: { refreshToken }
     });
 
-    res.json({ token, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
       return res.status(400).json({ error: 'Refresh token required' });
@@ -99,7 +109,8 @@ router.post('/refresh', async (req, res) => {
       data: { refreshToken: newRefreshToken }
     });
 
-    res.json({ token, refreshToken: newRefreshToken });
+    res.cookie('refreshToken', newRefreshToken, COOKIE_OPTIONS);
+    res.json({ token });
   } catch (error: any) {
     res.status(500).json({ error: 'Something went wrong' });
   }
@@ -112,6 +123,7 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
       data: { refreshToken: null }
     });
 
+    res.clearCookie('refreshToken', { path: '/api/auth' });
     res.json({ message: 'Logged out successfully' });
   } catch (error: any) {
     res.status(500).json({ error: 'Something went wrong' });

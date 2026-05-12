@@ -1,25 +1,15 @@
 const API_URL = 'http://localhost:3001/api';
 
 let authToken = localStorage.getItem('token');
-let refreshToken = localStorage.getItem('refreshToken');
-let tokenTimestamp = Number(localStorage.getItem('tokenTimestamp')) || Date.now();
 
-export const setTokens = (token: string, refresh: string) => {
+export const setTokens = (token: string) => {
   authToken = token;
-  refreshToken = refresh;
-  tokenTimestamp = Date.now();
   localStorage.setItem('token', token);
-  localStorage.setItem('refreshToken', refresh);
-  localStorage.setItem('tokenTimestamp', String(tokenTimestamp));
 };
 
 export const clearTokens = () => {
   authToken = null;
-  refreshToken = null;
-  tokenTimestamp = 0;
   localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('tokenTimestamp');
 };
 
 export const getToken = () => authToken;
@@ -29,51 +19,39 @@ const handleUnauthorized = () => {
   window.location.href = '/login';
 };
 
-const FIFTY_FIVE_MINUTES = 55 * 60 * 1000;
-
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
-  const headers: any = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers
+    ...options.headers as Record<string, string>
   };
-
-  if (authToken && refreshToken && (Date.now() - tokenTimestamp > FIFTY_FIVE_MINUTES)) {
-    try {
-      const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken })
-      });
-
-      if (refreshResponse.ok) {
-        const data = await refreshResponse.json();
-        setTokens(data.token, data.refreshToken);
-        headers['Authorization'] = `Bearer ${data.token}`;
-      }
-    } catch {
-      // Proactive refresh failed; continue with current token
-    }
-  }
 
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  let response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+  let response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+    credentials: 'include'
+  });
 
-  if (response.status === 401 && refreshToken) {
+  if (response.status === 401) {
     try {
       const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken })
+        credentials: 'include'
       });
 
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
-        setTokens(data.token, data.refreshToken);
+        setTokens(data.token);
         headers['Authorization'] = `Bearer ${data.token}`;
-        response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+        response = await fetch(`${API_URL}${endpoint}`, {
+          ...options,
+          headers,
+          credentials: 'include'
+        });
       } else {
         handleUnauthorized();
       }
@@ -92,6 +70,7 @@ export const api = {
         const response = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         return response.json();
@@ -104,6 +83,7 @@ export const api = {
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         return response.json();
