@@ -110,9 +110,9 @@ export const api = {
     }
   },
   products: {
-    getAll: async (params = {}) => {
+    getAll: async (params = {}, signal?: AbortSignal) => {
       const query = new URLSearchParams(params as any).toString();
-      return fetchWithAuth(`/products?${query}`).then(r => r.json());
+      return fetchWithAuth(`/products?${query}`, { signal }).then(r => r.json());
     },
     getById: async (id: number) => fetchWithAuth(`/products/${id}`).then(r => r.json()),
     create: async (data: any) => fetchWithAuth('/products', { method: 'POST', body: JSON.stringify(data) }).then(r => r.json()),

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,22 +23,31 @@ export const Products = () => {
   const { addItem } = useCart();
   const { user } = useAuth();
 
+  const abortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     loadProducts();
   }, [page, category, sort]);
 
   const loadProducts = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const params: any = { page, limit: 10 };
       if (category) params.category = category;
       if (sort) params.sort = sort;
-      
-      const data = await api.products.getAll(params);
+
+      const data = await api.products.getAll(params, controller.signal);
+      if (controller.signal.aborted) return;
       setProducts(data.products || []);
       setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error('Failed to load products', error);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('Failed to load products', err);
+      setPage(prev => prev);
     } finally {
       setLoading(false);
     }
