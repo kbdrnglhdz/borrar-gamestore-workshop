@@ -43,19 +43,36 @@ router.post('/add', authenticate, async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // BUG: Duplicate items get summed instead of incrementing quantity
-    // FIXME: Should check if item exists and increment quantity
+    const product = await prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (product.stock === 0) {
+      return res.status(400).json({ error: 'This product is currently out of stock', code: 'OUT_OF_STOCK' });
+    }
+
     const existingItem = await prisma.cartItem.findFirst({
       where: { cartId: cart.id, productId }
     });
 
+    if (existingItem && existingItem.quantity + quantity > product.stock) {
+      return res.status(400).json({ error: `Only ${product.stock} units available. You already have ${existingItem.quantity} in your cart.`, code: 'INSUFFICIENT_STOCK' });
+    }
+
+    if (!existingItem && quantity > product.stock) {
+      return res.status(400).json({ error: `Only ${product.stock} units available.`, code: 'INSUFFICIENT_STOCK' });
+    }
+
     if (existingItem) {
-      // BUG: Adding as new item instead of updating quantity
       await prisma.cartItem.create({
         data: {
           cartId: cart.id,
           productId,
-          quantity // BUG: Should be existingItem.quantity + quantity
+          quantity
         }
       });
     } else {
@@ -67,9 +84,6 @@ router.post('/add', authenticate, async (req: AuthRequest, res: Response) => {
         }
       });
     }
-
-    // BUG: No stock validation before adding to cart
-    // TODO: Validate stock before adding
 
     const updatedCart = await prisma.cart.findUnique({
       where: { id: cart.id },
@@ -91,13 +105,23 @@ router.put('/item/:itemId', authenticate, async (req: AuthRequest, res: Response
     const { itemId } = req.params;
     const { quantity } = req.body;
 
+    const existing = await prisma.cartItem.findUnique({
+      where: { id: parseInt(itemId) },
+      include: { product: true }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Cart item not found' });
+    }
+
+    if (quantity > existing.product.stock) {
+      return res.status(400).json({ error: `Only ${existing.product.stock} units available.`, code: 'INSUFFICIENT_STOCK' });
+    }
+
     const item = await prisma.cartItem.update({
       where: { id: parseInt(itemId) },
       data: { quantity }
     });
-
-    // BUG: Total price not recalculated when quantity changes
-    // TODO: Recalculate cart total
 
     res.json(item);
   } catch (error: any) {

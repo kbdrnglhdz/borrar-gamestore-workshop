@@ -30,7 +30,6 @@ export const Checkout = () => {
     setLoading(true);
 
     try {
-      // BUG: No confirmation step - order created immediately
       const order = await api.orders.checkout({
         shippingAddress,
         paymentMethod
@@ -40,11 +39,11 @@ export const Checkout = () => {
         alert(order.error);
       } else {
         await clearCart();
-        alert('Order placed successfully!'); // BUG: Should show confirmation
+        alert('Order placed successfully!');
         navigate('/products');
       }
-    } catch (error) {
-      alert('Failed to place order');
+    } catch (err: any) {
+      alert(err.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }

@@ -46,6 +46,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const data = await api.cart.addItem(productId, quantity);
+      if (data.error) {
+        throw { message: data.error, code: data.code };
+      }
       setCart(data);
     } finally {
       setLoading(false);
@@ -55,7 +58,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const updateItem = async (itemId: number, quantity: number) => {
     setLoading(true);
     try {
-      await api.cart.updateItem(itemId, quantity);
+      const data = await api.cart.updateItem(itemId, quantity);
+      if (data.error) {
+        throw { message: data.error, code: data.code };
+      }
       await refreshCart();
     } finally {
       setLoading(false);

@@ -32,6 +32,22 @@ export const Cart = () => {
     navigate('/checkout');
   };
 
+  const handleUpdateItem = async (itemId: number, quantity: number) => {
+    try {
+      await updateItem(itemId, quantity);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update item');
+    }
+  };
+
+  const handleRemoveItem = async (itemId: number) => {
+    try {
+      await removeItem(itemId);
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove item');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
@@ -50,7 +66,7 @@ export const Cart = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => updateItem(item.id, item.quantity - 1)}
+                onClick={() => handleUpdateItem(item.id, item.quantity - 1)}
                 className="px-2 py-1 bg-gray-200 rounded"
                 disabled={loading}
               >
@@ -58,7 +74,7 @@ export const Cart = () => {
               </button>
               <span>{item.quantity}</span>
               <button
-                onClick={() => updateItem(item.id, item.quantity + 1)}
+                onClick={() => handleUpdateItem(item.id, item.quantity + 1)}
                 className="px-2 py-1 bg-gray-200 rounded"
                 disabled={loading}
               >
@@ -68,7 +84,7 @@ export const Cart = () => {
             <div className="ml-4 text-right">
               <p className="font-bold">${(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
               <button
-                onClick={() => removeItem(item.id)}
+                onClick={() => handleRemoveItem(item.id)}
                 className="text-red-600 text-sm"
                 disabled={loading}
               >

@@ -58,8 +58,12 @@ export const Products = () => {
       alert('Please login to add items to cart');
       return;
     }
-    await addItem(productId);
-    alert('Added to cart!');
+    try {
+      await addItem(productId);
+      alert('Added to cart!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to add item to cart');
+    }
   };
 
   const categories = ['Adventure', 'Action', 'RPG', 'Shooter', 'Sports', 'Fighting', 'Simulation', 'Strategy', 'Racing', 'Puzzle', 'Platformer', 'Horror'];
