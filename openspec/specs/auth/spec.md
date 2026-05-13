@@ -26,6 +26,14 @@ Users SHALL authenticate with email and password to access the system. The syste
 - **WHEN** the server encounters an unexpected error during login
 - **THEN** a generic "Something went wrong" message is displayed
 
+### Requirement: Password visibility toggle in login form
+The login form SHALL include a password visibility toggle button as part of the auth UI.
+
+#### Scenario: Toggle available on login
+- **WHEN** the login form is displayed
+- **THEN** the password field SHALL have a visibility toggle button
+- **AND** the password is hidden by default
+
 ### Requirement: Input Validation
 The system SHALL validate that required fields are present before processing registration or login requests.
 

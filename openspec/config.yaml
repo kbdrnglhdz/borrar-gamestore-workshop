@@ -5,6 +5,11 @@ schema: spec-driven
 
 # Contexto del proyecto (se inyecta en TODOS los artefactos)
 context: |
+  Idioma: Español
+  Todos los artefactos deben escribirse en español.
+  Términos técnicos (API, endpoint, middleware, schema) mantenlos en inglés.
+  Nombres de variables, funciones y archivos siempre en inglés.
+  
   # GameStore - E-commerce de videojuegos
   
   ## Tech Stack
