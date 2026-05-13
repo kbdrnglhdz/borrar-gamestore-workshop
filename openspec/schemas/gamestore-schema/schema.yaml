@@ -1,6 +1,7 @@
 name: gamestore-schema
 version: 1
-description: Default OpenSpec workflow - proposal → specs → design → tasks
+description: GameStore workflow with security review and domain-specific spec templates (auth, catalog, payments)
+
 artifacts:
 
   - id: proposal

@@ -28,6 +28,22 @@ context: |
   - No hay rate limiting en login
   - El panel de admin es accesible para cualquier usuario autenticado
 
+  ## Domain-Specific Spec Templates
+  
+  When writing delta specs for specific domains, follow these templates (available in openspec/schemas/gamestore-schema/templates/domains/):
+  
+  **Auth Domain**:
+  - Include Security Requirements section (bcrypt, rate limiting, JWT expiry)
+  - Use scenarios for success, failure, and rate limiting
+  
+  **Catalog Domain**:
+  - Include Performance Requirements section (response time, N+1, pagination)
+  - Use pagination metadata (total, page, totalPages)
+  
+  **Payments Domain**:
+  - Include PCI Compliance section
+  - Never include card details in examples
+
 # Reglas específicas por tipo de artefacto
 rules:
   proposal:
@@ -37,10 +53,16 @@ rules:
     - "Mencionar si requiere migración de base de datos"
   
   specs:
+    - "Para cambios en auth, el delta spec DEBE incluir explícitamente: 'Passwords MUST be hashed with bcrypt (cost factor 12)'"
     - "Cada requirement DEBE tener al menos un escenario con formato Given/When/Then"
     - "Incluir escenarios de error (ej. producto sin stock, usuario no autorizado)"
     - "Usar SHALL para requisitos obligatorios, SHOULD para recomendados"
     - "Referenciar requisitos existentes si se modifican"
+    - "Para cambios que afecten el dominio 'auth', el delta spec debe seguir la estructura del template `domains/auth-spec.md` (disponible en el schema gamestore-schema)."
+    - "Para cambios que afecten el dominio 'catalog', el delta spec debe seguir la estructura del template `domains/catalog-spec.md`."
+    - "Para cambios que afecten el dominio 'payments', el delta spec debe seguir la estructura del template `domains/payments-spec.md`."
+    - "Si el cambio afecta múltiples dominios, crea secciones separadas para cada uno."
+    - "Mantén los requisitos de seguridad/rendimiento/compliance especificados en los templates."
   
   design:
     - "Incluir una tabla de 'Decisiones de Arquitectura' con columnas: Decisión, Alternativas, Por qué"
