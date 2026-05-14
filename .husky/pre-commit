@@ -1,10 +1,8 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 echo "🔍 Validating OpenSpec changes..."
 
 # Validar solo los cambios que han sido modificados en el commit
-CHANGED_CHANGES=$(git diff --cached --name-only | grep "openspec/changes/" | cut -d'/' -f3 | sort -u)
+CHANGED_CHANGES=$(git diff --cached --name-only | grep "openspec/changes/" | cut -d'/' -f3 | sort -u | grep -v "^archive$")
 
 if [ -n "$CHANGED_CHANGES" ]; then
   for change in $CHANGED_CHANGES; do
