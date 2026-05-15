@@ -6,6 +6,8 @@ on:
   workflow_dispatch:        # Permite ejecutar manualmente
   push:
     branches: [main]
+permissions:
+  contents: write
     
 jobs:
   archive:
