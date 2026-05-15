@@ -4,7 +4,9 @@ on:
   schedule:
     - cron: '0 18 * * 5'  # Viernes 6 PM (UTC)
   workflow_dispatch:        # Permite ejecutar manualmente
-
+  push:
+    branches: [main]
+    
 jobs:
   archive:
     runs-on: ubuntu-latest
